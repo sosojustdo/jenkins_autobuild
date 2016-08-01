@@ -24,13 +24,25 @@ do
 	else
 		sleep 1
 	    echo -e "\033[32;49;1m===================tomcat heath check doing!================================================================================================\033[39;49;0m"
-	    pro=`ps aux|grep $3|grep -v grep | grep java |awk '{print $2}'`
-	   	if [ $pro ]
+	    pid=`ps aux|grep $3|grep -v grep | grep java |awk '{print $2}'`
+	    tomcat_port='0'
+	   	if [ $pid ]
 	   	then 
-	   		port_info=`netstat -anp|grep $pro | awk 'NR==1{print $4}'`
+	   		port_info=`netstat -anp|grep $pid | awk 'NR==1{print $4}'`
 	   		if [ $port_info ]
 	   		then
-	   			tomcat_port=${port_info:8}
+	   			port=${port_info:8}   			
+	   			#exclude dubbo port
+	   			if [[ ${port:0:2} -eq "80" ]]
+				then
+					tomcat_port = $port
+				else
+					port_info_1=`netstat -anp|grep $pid | awk 'NR==2{print $4}'`
+					if [ $port_info_1 ]
+					then
+						tomcat_port=${port_info_1:8}
+					fi
+				fi
 	   			heath_check_url="http://127.0.0.1:"${tomcat_port}/${project_name}/"home.html"
 	   			http_code=`curl -I -m 10 -o /dev/null -s -w %{http_code} $heath_check_url`
 	   			if [ $http_code -eq 200 ]
