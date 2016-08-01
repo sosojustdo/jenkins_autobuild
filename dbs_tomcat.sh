@@ -12,11 +12,32 @@ scpFiles=$4
 tomcatbase="/usr/local"
 #scp files to target machine temp 
 
-scp -r $workspace/target/$scpFiles.war $server:~/temp/
+profile=""
+if [[ $targetFileName =~ "dev" ]]
+then
+  profile="dev"
+elif [[ $targetFileName =~ "test" ]]
+then
+  profile="test"
+else
+  profile=""
+fi
+
+
+mvn -B -f /root/.jenkins/workspace/$targetFileName/pom.xml -s /usr/local/maven/conf/settings.xml -gs /usr/local/maven/conf/settings.xml clean install -U package -P $profile  -Dmaven.test.skip=true
+
+#scp -r $workspace/target/$scpFiles.war $server:~/temp/
+if [ ! -d "$workspace/target" ]
+then
+	scp -i /home/jenkins/jenkins -P 54008 $workspace/$scpFiles/target/$scpFiles.war jenkins@$server:~/temp/
+else
+	scp -i /home/jenkins/jenkins -P 54008 $workspace/target/$scpFiles.war jenkins@$server:~/temp/
+fi
 
 #login remote machine
 echo -e "\033[32;49;1m will login $server \033[39;49;0m"
-ssh $server   << remotetags  
+#ssh $server   << remotetags  
+ssh -i /home/jenkins/jenkins -p 54008 jenkins@$server << remotetags
 
 echo -e "\033[32;49;1m login $server sucess \033[39;49;0m"
 ifconfig
@@ -30,21 +51,22 @@ echo -e "\033[32;49;1m "scpFiles:"$scpFiles \033[39;49;0m"
 echo -e "\033[32;49;1m "jobWar:"${scpFiles} \033[39;49;0m"
 
 cd ~/temp
-mv ${scpFiles}.war ${scpFiles}.zip
-rm -rf ${scpFiles}
-mkdir ${scpFiles}
+#mv ${scpFiles}.war ${scpFiles}.zip
+#rm -rf ${scpFiles}
+#mkdir ${scpFiles}
 
-mv ${scpFiles}.zip ./${scpFiles}
-cd ./${scpFiles}
-unzip ${scpFiles}.zip
-rm ${scpFiles}.zip
+#mv ${scpFiles}.zip ./${scpFiles}
+#cd ./${scpFiles}
+#unzip ${scpFiles}.zip
+#rm ${scpFiles}.zip
 
 echo -e "\033[32;49;1m "targetWebapps:"$tomcatbase/$targetFileName/webapps \033[39;49;0m"
 
 
-cd ..
+#cd ..
 rm -rf $tomcatbase/$targetFileName/webapps/${scpFiles}
-mv ${scpFiles}  $tomcatbase/$targetFileName/webapps/
+rm $tomcatbase/$targetFileName/webapps/$scpFiles.war
+mv ${scpFiles}.war  $tomcatbase/$targetFileName/webapps/
 
 
 #start tomcat
@@ -55,6 +77,7 @@ ps -ef | grep $targetFileName
 echo "will exit from $server"
 exit  
 remotetags
+
 
 
 
