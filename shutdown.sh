@@ -22,7 +22,7 @@ do
 		else  
 		  	for i in $pro
 			do
-			    kill -15 $i
+			    kill -9 $i
 			done
 		fi
 	fi  
