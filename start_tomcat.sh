@@ -35,7 +35,7 @@ do
 	   			#exclude dubbo port
 	   			if [[ ${port:0:2} -eq "80" ]]
 				then
-					tomcat_port = $port
+					tomcat_port=$port
 				else
 					port_info_1=`netstat -anp|grep $pid | awk 'NR==2{print $4}'`
 					if [ $port_info_1 ]
