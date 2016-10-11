@@ -64,8 +64,14 @@ echo -e "\033[32;49;1m "targetWebapps:"$tomcatbase/$targetFileName/webapps \033[
 
 
 #cd ..
-rm -rf $tomcatbase/$targetFileName/webapps/${scpFiles}
-rm $tomcatbase/$targetFileName/webapps/$scpFiles.war
+#rm -rf $tomcatbase/$targetFileName/webapps/${scpFiles}
+#rm $tomcatbase/$targetFileName/webapps/$scpFiles.war
+if [ -d "$tomcatbase/$targetFileName/webapps/${scpFiles}" ]; then
+	rm $tomcatbase/$targetFileName/webapps/${scpFiles} -rf 
+fi
+if [ -f "$tomcatbase/$targetFileName/webapps/$scpFiles.war" ]; then
+	rm $tomcatbase/$targetFileName/webapps/$scpFiles.war
+fi
 mv ${scpFiles}.war  $tomcatbase/$targetFileName/webapps/
 
 
